@@ -1,0 +1,919 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Repositorio Powerchair MX</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: barra superior con selector de rol · navegación lateral por módulo · área de trabajo con tablas y paneles de detalle */
+:root{
+  --bg:#F6F5F0; --surface:#FFFFFF; --surface-2:#EFEDE6; --line:#E2DFD6;
+  --ink:#13213F; --ink-2:#55607A; --accent:#2B6CB0; --accent-soft:#E1ECF7; --on-accent:#FFFFFF;
+  --warm:#F2A33A; --warm-soft:#FCEBD0; --warm-ink:#8A4B00;
+  --ok:#2F7A52; --ok-soft:#DDF1E5; --bad:#B83232; --bad-soft:#FBE3E3;
+  --nav:#13213F; --nav-ink:#DCE3F0; --nav-muted:#93A1BD;
+  --f-display:"DM Sans",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --f-body:"DM Sans",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#0E1628; --surface:#16213A; --surface-2:#1D2A47; --line:#2A3858;
+  --ink:#EEF1F7; --ink-2:#A6B1C7; --accent:#72A9E9; --accent-soft:#1C3356; --on-accent:#0E1628;
+  --warm:#F2A33A; --warm-soft:#3A2A12; --warm-ink:#F6C27A;
+  --ok:#62C690; --ok-soft:#153828; --bad:#F07C7C; --bad-soft:#3D1C1F;
+  --nav:#0A1120; --nav-ink:#D2DAEA; --nav-muted:#8492AE; color-scheme:dark }}
+:root[data-theme="dark"]{
+  --bg:#0E1628; --surface:#16213A; --surface-2:#1D2A47; --line:#2A3858;
+  --ink:#EEF1F7; --ink-2:#A6B1C7; --accent:#72A9E9; --accent-soft:#1C3356; --on-accent:#0E1628;
+  --warm:#F2A33A; --warm-soft:#3A2A12; --warm-ink:#F6C27A;
+  --ok:#62C690; --ok-soft:#153828; --bad:#F07C7C; --bad-soft:#3D1C1F;
+  --nav:#0A1120; --nav-ink:#D2DAEA; --nav-muted:#8492AE; color-scheme:dark }
+
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.5}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:40;background:var(--nav)}
+h1,h2,h3{font-family:var(--f-display);text-wrap:balance;margin:0;line-height:1.2}
+h1{font-size:26px;font-weight:700;letter-spacing:-.01em}
+h2{font-size:18px;font-weight:700}
+h3{font-size:15px;font-weight:600}
+p{margin:0}
+a{color:var(--accent)}
+.mono{font-family:var(--f-mono);font-size:12.5px}
+.muted{color:var(--ink-2)}
+.num{font-variant-numeric:tabular-nums}
+
+.topbar{position:sticky;top:env(safe-area-inset-top,0px);z-index:30;background:var(--nav);color:var(--nav-ink);
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:10px;
+  display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:10px;min-width:0}
+.brand b{font-weight:700;font-size:15px;color:#fff}
+.brand span{display:block;font-size:12px;color:var(--nav-muted)}
+.role{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--nav-muted)}
+.role select{background:transparent;color:#fff;border:1px solid #3A4A6E;border-radius:8px;padding:6px 10px;font:inherit;font-size:14px;font-weight:600}
+.role select option{color:#13213F;background:#fff}
+.notice{background:var(--warm-soft);color:var(--warm-ink);font-size:13px;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:7px}
+
+.shell{display:grid;grid-template-columns:236px minmax(0,1fr);align-items:start}
+.side{background:var(--surface);border-right:1px solid var(--line);padding-block:16px;padding-inline:12px;
+  position:sticky;top:calc(env(safe-area-inset-top,0px) + 58px);min-height:calc(100vh - 100px)}
+.navlabel{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-2);padding:14px 12px 6px;font-weight:600}
+.side a{display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:8px;color:var(--ink-2);text-decoration:none;font-weight:500;font-size:14px;white-space:nowrap}
+.side a:hover{background:var(--surface-2);color:var(--ink)}
+.side a.on{background:var(--accent-soft);color:var(--accent);font-weight:600}
+.side a .lk{margin-left:auto;opacity:.7;display:inline-flex}
+.side a.locked{opacity:.6}
+main{padding-block:28px 72px;padding-left:max(28px,env(safe-area-inset-left,0px));padding-right:max(28px,env(safe-area-inset-right,0px));min-width:0;max-width:1180px}
+.head{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;flex-wrap:wrap;margin-bottom:20px}
+.head .sub{color:var(--ink-2);margin-top:4px;max-width:65ch}
+.stack{display:flex;flex-direction:column;gap:16px}
+
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px}
+.tile{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:16px 18px;display:flex;flex-direction:column;gap:6px;min-width:0}
+.tile .lbl{font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-2);font-weight:600}
+.tile .big{font-size:30px;font-weight:700;font-variant-numeric:tabular-nums;line-height:1.1}
+.tile .big small{font-size:15px;font-weight:500;color:var(--ink-2)}
+.tile .foot{font-size:13px;color:var(--ink-2)}
+.track{height:8px;border-radius:99px;background:var(--surface-2);overflow:hidden}
+.track i{display:block;height:100%;background:var(--accent);border-radius:99px}
+.track.warm i{background:var(--warm)}
+
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:18px;min-width:0}
+.panel > h2{margin-bottom:12px}
+.panel-h{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px}
+.grid2{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);gap:16px;align-items:start}
+.grid2.even{grid-template-columns:repeat(2,minmax(0,1fr))}
+.grid4{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+
+.bars{display:flex;flex-direction:column;gap:10px}
+.barrow{display:grid;grid-template-columns:130px minmax(0,1fr) 28px;align-items:center;gap:10px;font-size:14px}
+.barrow .track{height:12px}
+
+.list{display:flex;flex-direction:column}
+.list > div{display:flex;gap:12px;align-items:flex-start;padding:10px 0;border-top:1px solid var(--line)}
+.list > div:first-child{border-top:0;padding-top:0}
+.list .ico{flex:none;width:30px;height:30px;border-radius:8px;display:grid;place-items:center}
+
+.tbl{overflow-x:auto;border:1px solid var(--line);border-radius:12px;background:var(--surface)}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th{font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-2);text-align:left;font-weight:600;padding:10px 12px;background:var(--surface-2);white-space:nowrap}
+td{padding:10px 12px;border-top:1px solid var(--line);vertical-align:top}
+tr.click{cursor:pointer}
+tr.click:hover td{background:var(--surface-2)}
+tr.sel td{background:var(--accent-soft)}
+td.r,th.r{text-align:right;font-variant-numeric:tabular-nums}
+
+.pill{display:inline-flex;align-items:center;gap:5px;padding:2px 9px;border-radius:99px;font-size:12px;font-weight:600;white-space:nowrap;line-height:1.6}
+.pill.ok{background:var(--ok-soft);color:var(--ok)}
+.pill.warn{background:var(--warm-soft);color:var(--warm-ink)}
+.pill.bad{background:var(--bad-soft);color:var(--bad)}
+.pill.info{background:var(--accent-soft);color:var(--accent)}
+.pill.neu{background:var(--surface-2);color:var(--ink-2)}
+
+.btn{display:inline-flex;align-items:center;gap:7px;border:1px solid var(--line);background:var(--surface);color:var(--ink);padding:8px 14px;border-radius:8px;font:inherit;font-size:14px;font-weight:600;cursor:pointer}
+.btn:hover{background:var(--surface-2)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
+.btn.primary:hover{filter:brightness(1.08)}
+.btn.sm{padding:4px 10px;font-size:13px}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+.filters{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px}
+.filters > *{flex:1 1 150px;min-width:0}
+.field{display:flex;flex-direction:column;gap:4px;font-size:13px;color:var(--ink-2);font-weight:500;min-width:0}
+input,select,textarea{background:var(--surface);color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:8px 10px;font:inherit;font-size:14px;width:100%;min-width:0}
+.searchbox{position:relative}
+.searchbox svg{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--ink-2)}
+.searchbox input{padding-left:34px}
+.formgrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.formgrid .full{grid-column:1/-1}
+
+.kv{display:grid;grid-template-columns:auto minmax(0,1fr);gap:6px 16px;font-size:14px}
+.kv dt{color:var(--ink-2)}
+.kv dd{margin:0;font-weight:500}
+.sect{border-top:1px solid var(--line);padding-top:14px;margin-top:14px;display:flex;flex-direction:column;gap:10px}
+.sect-t{font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-2);font-weight:600;display:flex;align-items:center;gap:8px;justify-content:space-between}
+
+.lockbox{display:flex;gap:12px;align-items:flex-start;padding:14px;border:1px dashed var(--line);border-radius:10px;background:var(--surface-2);color:var(--ink-2);font-size:14px}
+.medbox{border:1px solid var(--warm);background:var(--warm-soft);border-radius:10px;padding:14px;display:flex;flex-direction:column;gap:8px}
+.medbox .kv dd{color:var(--ink)}
+.alert{display:flex;gap:10px;align-items:flex-start;padding:10px 12px;border-radius:10px;font-size:14px}
+.alert.warn{background:var(--warm-soft);color:var(--warm-ink)}
+.alert.bad{background:var(--bad-soft);color:var(--bad)}
+.alert.ok{background:var(--ok-soft);color:var(--ok)}
+.alert.info{background:var(--accent-soft);color:var(--accent)}
+
+.modcard{display:flex;flex-direction:column;gap:8px;text-decoration:none;color:inherit;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:16px}
+.modcard:hover{border-color:var(--accent)}
+.modcard .mi{width:36px;height:36px;border-radius:9px;display:grid;place-items:center;background:var(--accent-soft);color:var(--accent)}
+.modcard.lock .mi{background:var(--surface-2);color:var(--ink-2)}
+
+.mgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:12px}
+.mcard{background:var(--surface);border:1px solid var(--line);border-radius:12px;overflow:hidden;display:flex;flex-direction:column;min-width:0}
+.thumb{aspect-ratio:16/10;max-width:100%;display:grid;place-items:center;position:relative}
+.thumb .yr{position:absolute;left:10px;bottom:8px;font-family:var(--f-mono);font-size:12px;font-weight:500}
+.t-Foto{background:var(--accent-soft);color:var(--accent)}
+.t-Video{background:var(--warm-soft);color:var(--warm-ink)}
+.t-Prensa{background:var(--ok-soft);color:var(--ok)}
+.t-Documento{background:var(--surface-2);color:var(--ink-2)}
+.t-Logo{background:var(--bad-soft);color:var(--bad)}
+.mbody{padding:10px 12px 12px;display:flex;flex-direction:column;gap:6px;min-width:0}
+.mbody .fn{font-family:var(--f-mono);font-size:11.5px;color:var(--ink-2);overflow-wrap:anywhere}
+.mbody .row{display:flex;gap:6px;flex-wrap:wrap}
+
+.tl{display:flex;flex-direction:column;position:relative;padding-left:4px}
+.tl > div{display:grid;grid-template-columns:86px minmax(0,1fr);gap:14px;padding:8px 0;position:relative}
+.tl .y{font-family:var(--f-mono);font-size:13px;font-weight:500;color:var(--accent);padding-top:1px}
+.tl .d{border-left:2px solid var(--line);padding-left:14px;position:relative}
+.tl .d::before{content:"";position:absolute;left:-6px;top:6px;width:10px;height:10px;border-radius:50%;background:var(--warm)}
+
+.tree{font-family:var(--f-mono);font-size:13px;line-height:1.75;overflow-x:auto;white-space:pre;background:var(--surface-2);border-radius:10px;padding:14px 16px;margin:0}
+.tree .rs{color:var(--bad)}
+.tree .c{color:var(--ink-2)}
+.namebox{font-family:var(--f-mono);font-size:13.5px;padding:10px 12px;border-radius:8px;background:var(--surface-2);overflow-wrap:anywhere}
+
+.tabs{display:flex;gap:4px;border-bottom:1px solid var(--line);margin-bottom:16px;overflow-x:auto}
+.tabs button{background:none;border:0;border-bottom:2px solid transparent;padding:10px 14px;font:inherit;font-weight:600;color:var(--ink-2);cursor:pointer;white-space:nowrap}
+.tabs button.on{color:var(--accent);border-bottom-color:var(--accent)}
+
+.kanban{display:grid;grid-template-columns:repeat(4,minmax(200px,1fr));gap:12px;overflow-x:auto;padding-bottom:4px}
+.col{background:var(--surface-2);border-radius:12px;padding:12px;display:flex;flex-direction:column;gap:10px;min-width:200px}
+.col h3{display:flex;justify-content:space-between;font-size:13px;color:var(--ink-2);text-transform:uppercase;letter-spacing:.05em}
+.kcard{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:10px 12px;display:flex;flex-direction:column;gap:6px;font-size:14px}
+.kcard .mv{display:flex;gap:6px;justify-content:flex-end}
+
+.report{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:28px;max-width:780px}
+.report h2{font-size:22px}
+.report .rk{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin:18px 0}
+.report .rk div{border-left:3px solid var(--warm);padding:2px 0 2px 12px}
+.report .rk b{display:block;font-size:24px;font-variant-numeric:tabular-nums}
+.report .rk span{font-size:13px;color:var(--ink-2)}
+.report p{max-width:65ch;margin-top:10px}
+.report ul{margin:8px 0 0;padding-left:20px}
+
+.guide ol{margin:6px 0 0;padding-left:20px;display:flex;flex-direction:column;gap:4px;font-size:14px}
+
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(18px + env(safe-area-inset-bottom,0px));background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:10px;font-size:14px;font-weight:500;z-index:50;max-width:calc(100% - 32px);box-shadow:0 6px 24px rgba(0,0,0,.2)}
+
+@media (max-width:900px){
+  .shell{grid-template-columns:1fr}
+  .side{position:static;min-height:0;border-right:0;border-bottom:1px solid var(--line);display:flex;gap:4px;overflow-x:auto;
+    padding-block:8px;padding-left:max(12px,env(safe-area-inset-left,0px));padding-right:max(12px,env(safe-area-inset-right,0px))}
+  .navlabel{display:none}
+  main{padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:20px 72px}
+  .grid2,.grid2.even{grid-template-columns:1fr}
+}
+@media (max-width:520px){
+  .formgrid{grid-template-columns:1fr}
+  .barrow{grid-template-columns:96px minmax(0,1fr) 24px}
+  .report{padding:18px}
+  .tl > div{grid-template-columns:64px minmax(0,1fr)}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+
+<header class="topbar">
+  <div class="brand">
+    <svg width="30" height="30" viewBox="0 0 30 30" aria-hidden="true"><circle cx="15" cy="15" r="14" fill="#F2A33A"/><path d="M15 6l4.2 3-1.6 5h-5.2l-1.6-5zM6.5 13l4.3 1.3 1.6 5-2.7 3.6M23.5 13l-4.3 1.3-1.6 5 2.7 3.6M12.4 19.3h5.2" fill="none" stroke="#13213F" stroke-width="1.6" stroke-linejoin="round"/></svg>
+    <div><b>Repositorio Powerchair MX</b><span>Powerchair Football México, A.C. · prototipo</span></div>
+  </div>
+  <label class="role" for="role">Ver como
+    <select id="role">
+      <option value="direccion">Dirección</option>
+      <option value="deportivo">Encargado deportivo</option>
+      <option value="fondos">Procuración de fondos</option>
+      <option value="coordinador">Coordinador · Gladiadores</option>
+      <option value="voluntario">Voluntario</option>
+    </select>
+  </label>
+</header>
+<div class="notice">Prototipo con datos de ejemplo. Los atletas, tutores, donantes, proveedores y montos son ficticios; los equipos, aliados y la historia de la asociación son reales.</div>
+
+<div class="shell">
+  <nav class="side" id="nav" aria-label="Módulos"></nav>
+  <main id="main"></main>
+</div>
+<div class="toast" id="toast" hidden></div>
+
+<script>
+/* ---------- utilidades ---------- */
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const mxn = n => new Intl.NumberFormat('es-MX',{style:'currency',currency:'MXN',maximumFractionDigits:0}).format(n);
+const int = n => new Intl.NumberFormat('es-MX').format(n);
+const MESES = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+const fdate = d => { const [y,m,dd] = d.split('-'); return dd ? `${+dd} ${MESES[+m-1]} ${y}` : `${MESES[+m-1]} ${y}`; };
+const norm = s => String(s||'').normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase().replace(/[^a-z0-9@. ]/g,' ').replace(/\s+/g,' ').trim();
+function lev(a,b){ const m=a.length,n=b.length; if(!m) return n; if(!n) return m; let p=Array.from({length:n+1},(_,i)=>i);
+  for(let i=1;i<=m;i++){ const c=[i]; for(let j=1;j<=n;j++) c[j]=Math.min(p[j]+1,c[j-1]+1,p[j-1]+(a[i-1]===b[j-1]?0:1)); p=c; } return p[n]; }
+let toastT; function toast(msg){ const t=$('#toast'); t.textContent=msg; t.hidden=false; clearTimeout(toastT); toastT=setTimeout(()=>t.hidden=true,2600); }
+
+const ICONS = {
+  home:'<path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"/>',
+  user:'<circle cx="12" cy="8" r="4"/><path d="M4 21c1-4 4.5-6 8-6s7 2 8 6"/>',
+  wrench:'<path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18v3h3l6.3-6.3a4 4 0 0 0 5.4-5.4l-2.5 2.5-2.5-.5-.5-2.5z"/>',
+  image:'<rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="2"/><path d="M21 17l-5-5-9 8"/>',
+  heart:'<path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/>',
+  folder:'<path d="M3 6a1 1 0 0 1 1-1h5l2 2h9a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1z"/>',
+  doc:'<path d="M6 3h8l4 4v14H6z"/><path d="M14 3v4h4M9 12h6M9 16h6"/>',
+  help:'<circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.6.3-1 .8-1 1.5v.7M12 17h.01"/>',
+  lock:'<rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/>',
+  unlock:'<rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 7.5-2"/>',
+  search:'<circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/>',
+  video:'<rect x="3" y="6" width="13" height="12" rx="2"/><path d="M16 10l5-3v10l-5-3z"/>',
+  news:'<rect x="3" y="5" width="18" height="14" rx="1"/><path d="M7 9h6M7 13h10M7 16h10"/>',
+  star:'<circle cx="12" cy="12" r="8"/><path d="M12 8l1.2 2.6 2.8.3-2.1 1.9.6 2.8L12 14.2l-2.5 1.4.6-2.8L8 10.9l2.8-.3z"/>',
+  alert:'<path d="M12 3l10 18H2z"/><path d="M12 10v5M12 18h.01"/>',
+  check:'<path d="M5 12l5 5 9-10"/>',
+  copy:'<rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V5a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h3"/>',
+  chair:'<circle cx="9" cy="17" r="4"/><path d="M9 3v8h6l2.5 6H20"/>',
+  plus:'<path d="M12 5v14M5 12h14"/>',
+  left:'<path d="M15 6l-6 6 6 6"/>', right:'<path d="M9 6l6 6-6 6"/>',
+  clock:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>'
+};
+const ic = (n,s=18) => `<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONS[n]||''}</svg>`;
+const TYPE_ICON = {Foto:'image',Video:'video',Prensa:'news',Documento:'doc',Logo:'star'};
+
+/* ---------- datos de ejemplo ---------- */
+const TEAMS = {
+  'Tigres':'Monterrey, N.L.','Rayados':'Monterrey, N.L.','Gladiadores':'Monterrey, N.L.',
+  'Saltillo FC':'Saltillo, Coah.','Independiente':'Chihuahua, Chih.','Tuzos':'Pachuca, Hgo.','León':'León, Gto. (en formación)'
+};
+const ATH = [
+ {id:'A01',n:'Mateo Garza Treviño',e:14,c:'Monterrey',t:'Tigres',cat:'La Liga',cl:'PF1',tutor:'Laura Treviño (madre) · 81 5550 0101',con:'Firmado',conF:'2026-02-10',av:true,s:'S-01',dx:'Atrofia muscular espinal tipo 2',nt:'Maneja la silla con la mano derecha.',rs:'Pausa de hidratación cada 15 min.',tor:['Temporada 2026 · La Liga'],as:92},
+ {id:'A02',n:'Valeria Cantú Ríos',e:22,c:'San Nicolás',t:'Tigres',cat:'La Liga',cl:'PF2',tutor:'',con:'Firmado',conF:'2026-01-22',av:true,s:'S-02',dx:'Parálisis cerebral (cuadriplejia espástica)',nt:'Requiere apoyo para transferencia a la silla deportiva.',rs:'Evitar sesiones de más de 90 min.',tor:['Temporada 2026 · La Liga'],as:88},
+ {id:'A03',n:'Diego Salinas Mora',e:31,c:'Guadalupe',t:'Tigres',cat:'La Liga',cl:'PF1',tutor:'',con:'Firmado',conF:'2025-12-05',av:true,s:'S-03',dx:'Lesión medular alta (C4)',nt:'Control de la silla con la barbilla.',rs:'Vigilar temperatura corporal en canchas sin clima.',tor:['Temporada 2026 · La Liga','Copa América 2025 · Selección'],as:95},
+ {id:'A04',n:'Sebastián Leal Ortiz',e:12,c:'Monterrey',t:'Rayados',cat:'Liga de Desarrollo',cl:'PF1',tutor:'Jorge Leal (padre) · 81 5550 0104',con:'Pendiente',conF:'',av:false,s:'S-04',dx:'Distrofia muscular de Duchenne',nt:'Recién incorporado en 2026.',rs:'Pendiente de valoración funcional.',tor:['Temporada 2026 · Desarrollo'],as:80},
+ {id:'A05',n:'Camila Villarreal Paz',e:17,c:'San Pedro Garza García',t:'Rayados',cat:'La Liga',cl:'PF2',tutor:'Mónica Paz (madre) · 81 5550 0105',con:'Firmado',conF:'2026-03-01',av:true,s:'S-05',dx:'Atrofia muscular espinal tipo 3',nt:'Usa control de joystick estándar.',rs:'Ninguna adicional.',tor:['Temporada 2026 · La Liga'],as:90},
+ {id:'A06',n:'Rodrigo Elizondo Lara',e:26,c:'Apodaca',t:'Rayados',cat:'La Liga',cl:'PF3',tutor:'',con:'Firmado',conF:'2026-01-15',av:true,s:'S-06',dx:'Parálisis cerebral (diplejia)',nt:'Capitán del equipo.',rs:'Ninguna adicional.',tor:['Temporada 2026 · La Liga'],as:85},
+ {id:'A07',n:'Emilio Garza Benavides',e:10,c:'Escobedo',t:'Gladiadores',cat:'Liga de Desarrollo',cl:'PF1',tutor:'Ana Benavides (madre) · 81 5550 0107',con:'Firmado',conF:'2026-08-12',av:true,s:'S-07',dx:'Atrofia muscular espinal tipo 2',nt:'Primer año en el deporte.',rs:'Supervisión de cuidador en todo momento.',tor:['Temporada 2026 · Desarrollo'],as:78},
+ {id:'A08',n:'Renata Saldaña Cruz',e:19,c:'Santa Catarina',t:'Gladiadores',cat:'Liga de Desarrollo',cl:'PF2',tutor:'',con:'Pendiente',conF:'',av:false,s:'S-08',dx:'Distrofia muscular de cinturas',nt:'Su silla está en mantenimiento; entrena con silla de préstamo.',rs:'Evitar esfuerzo prolongado de hombros.',tor:['Temporada 2026 · Desarrollo'],as:70},
+ {id:'A09',n:'Andrés Quiroga Peña',e:35,c:'Monterrey',t:'Gladiadores',cat:'Liga de Desarrollo',cl:'PF3',tutor:'',con:'Firmado',conF:'2026-08-15',av:true,s:'S-09',dx:'Lesión medular (C6)',nt:'Interesado en formarse como árbitro.',rs:'Ninguna adicional.',tor:['Temporada 2026 · Desarrollo'],as:83},
+ {id:'A10',n:'Luis Fernando Ramos Aguirre',e:24,c:'Saltillo',t:'Saltillo FC',cat:'La Liga',cl:'PF1',tutor:'',con:'Firmado',conF:'2026-02-02',av:true,s:'S-10',dx:'Distrofia muscular de Duchenne',nt:'Seleccionado nacional.',rs:'Ventilación asistida nocturna; traslados largos con cuidador.',tor:['Temporada 2026 · La Liga','Copa América 2025 · Selección'],as:91},
+ {id:'A11',n:'Ximena Dávila Flores',e:15,c:'Ramos Arizpe',t:'Saltillo FC',cat:'Liga de Desarrollo',cl:'PF2',tutor:'Rocío Flores (madre) · 844 555 0111',con:'Firmado',conF:'2026-04-09',av:true,s:'S-11',dx:'Parálisis cerebral',nt:'No tiene silla propia; usa la silla de préstamo S-11.',rs:'Ninguna adicional.',tor:['Temporada 2026 · Desarrollo'],as:87},
+ {id:'A12',n:'Ángel Muñoz Chávez',e:28,c:'Chihuahua',t:'Independiente',cat:'La Liga',cl:'PF2',tutor:'',con:'Firmado',conF:'2026-01-30',av:true,s:'S-12',dx:'Lesión medular (C5)',nt:'Viaja a Monterrey para jornadas de liga.',rs:'Ninguna adicional.',tor:['Temporada 2026 · La Liga'],as:89},
+ {id:'A13',n:'Daniela Holguín Ruiz',e:13,c:'Chihuahua',t:'Independiente',cat:'Liga de Desarrollo',cl:'PF1',tutor:'Martha Ruiz (madre) · 614 555 0113',con:'Pendiente',conF:'',av:false,s:'',dx:'Atrofia muscular espinal tipo 2',nt:'Sin silla deportiva asignada; en lista de espera.',rs:'Pendiente de valoración funcional.',tor:[],as:75},
+ {id:'A14',n:'Jorge Islas Hernández',e:20,c:'Pachuca',t:'Tuzos',cat:'La Liga',cl:'PF1',tutor:'',con:'Firmado',conF:'2026-02-18',av:true,s:'S-13',dx:'Distrofia muscular de Duchenne',nt:'Seleccionado nacional.',rs:'Traslados largos con cuidador.',tor:['Temporada 2026 · La Liga','Copa América 2025 · Selección'],as:93},
+ {id:'A15',n:'Sofía Medina Tapia',e:16,c:'León',t:'León',cat:'Liga de Desarrollo',cl:'PF2',tutor:'Patricia Tapia (madre) · 477 555 0115',con:'Pendiente',conF:'',av:false,s:'',dx:'Parálisis cerebral',nt:'Asistió a la primera clínica en León (2026).',rs:'Pendiente de valoración funcional.',tor:[],as:60}
+];
+const CHAIRS = [
+ ['S-01','En servicio','2018'],['S-02','En servicio','2018'],['S-03','En servicio','2018'],['S-04','En servicio','2019'],
+ ['S-05','En servicio','2019'],['S-06','En servicio','2020'],['S-07','En servicio','2021'],['S-08','En mantenimiento','2021'],
+ ['S-09','En servicio','2022'],['S-10','En servicio','2022'],['S-11','En servicio','2023'],['S-12','En servicio','2023'],
+ ['S-13','En servicio','2024'],['S-14','En mantenimiento','2024']
+].map(([id,st,y])=>({id,st,y}));
+const PROV = [
+ {id:'P01',n:'Movilidad Deportiva del Norte',cat:'Sillas y refacciones',c:'Monterrey',ct:'Ing. Raúl Montes',tel:'81 5550 0201',em:'ventas@movilidadnorte.ejemplo.mx',ref:'Cotización de silla deportiva: 10,000 USD aprox.'},
+ {id:'P02',n:'Baterías Industriales Regias',cat:'Baterías',c:'Monterrey',ct:'Karla Ibarra',tel:'81 5550 0202',em:'karla@bateriasregias.ejemplo.mx',ref:'Juego de baterías: $6,800 MXN'},
+ {id:'P03',n:'Taller Electromecánico Cumbres',cat:'Mantenimiento y calibración',c:'Monterrey',ct:'Óscar Peña',tel:'81 5550 0203',em:'taller@cumbres.ejemplo.mx',ref:'Hora de servicio técnico: según bitácora'},
+ {id:'P04',n:'Refacciones Ortopédicas Lindavista',cat:'Refacciones',c:'Guadalupe',ct:'Sandra Vela',tel:'81 5550 0204',em:'svela@lindavista.ejemplo.mx',ref:'Juego de llantas: $2,400 MXN'},
+ {id:'P05',n:'Transportes Accesibles Sierra Madre',cat:'Transporte con rampa',c:'Monterrey',ct:'Miguel Ángel Ortiz',tel:'81 5550 0205',em:'reservas@sierramadre.ejemplo.mx',ref:'Traslado local con rampa: $1,800 MXN por día'},
+ {id:'P06',n:'Deportivo Municipal Valle Verde',cat:'Espacio deportivo',c:'Monterrey',ct:'Coordinación del deportivo',tel:'81 5550 0206',em:'deportivo@valleverde.ejemplo.mx',ref:'Duela de básquetbol: $1,200 MXN por sesión'},
+ {id:'P07',n:'Importaciones Médicas Frontera',cat:'Importación de sillas',c:'Nuevo Laredo',ct:'Lic. Paola Garza',tel:'867 555 0207',em:'pgarza@imfrontera.ejemplo.mx',ref:'Trámite de importación por silla: $9,500 MXN'},
+ {id:'P08',n:'Taller Mecánico Saltillo Centro',cat:'Mantenimiento y calibración',c:'Saltillo',ct:'Ernesto Rdz.',tel:'844 555 0208',em:'taller@saltillocentro.ejemplo.mx',ref:'Revisión general: $1,400 MXN'},
+ {id:'P09',n:'Autobuses Foráneos del Bajío',cat:'Traslados foráneos',c:'León',ct:'Ventas grupales',tel:'477 555 0209',em:'grupos@foraneosbajio.ejemplo.mx',ref:'Viaje redondo Monterrey–León: cotizar por grupo'},
+ {id:'P10',n:'Uniformes y Bordados Mitras',cat:'Uniformes',c:'Monterrey',ct:'Lupita Zamora',tel:'81 5550 0210',em:'pedidos@mitras.ejemplo.mx',ref:'Jersey de juego: $450 MXN'}
+];
+/* sv = servicio técnico (mano de obra) — se usa para calcular el costo por hora */
+const MANT = [
+ {f:'2026-01-15',s:'S-01',p:'P03',d:'Calibración de joystick',cost:750,h:1.5,sv:true},
+ {f:'2026-02-03',s:'S-03',p:'P03',d:'Ajuste de control de barbilla',cost:1100,h:2.5,sv:true},
+ {f:'2026-02-20',s:'S-08',p:'P02',d:'Cambio de baterías',cost:6800,h:1,sv:false},
+ {f:'2026-03-11',s:'S-05',p:'P04',d:'Cambio de llantas',cost:2400,h:1,sv:false},
+ {f:'2026-04-02',s:'S-10',p:'P08',d:'Revisión general',cost:1400,h:3,sv:true},
+ {f:'2026-04-28',s:'S-12',p:'P03',d:'Reparación de motor izquierdo',cost:4200,h:4,sv:false},
+ {f:'2026-05-19',s:'S-02',p:'P03',d:'Calibración de joystick',cost:500,h:1,sv:true},
+ {f:'2026-06-07',s:'S-07',p:'P04',d:'Reemplazo de defensa metálica',cost:3100,h:2,sv:false},
+ {f:'2026-07-14',s:'S-14',p:'P03',d:'Diagnóstico eléctrico',cost:900,h:2,sv:true},
+ {f:'2026-08-09',s:'S-09',p:'P02',d:'Cambio de baterías',cost:6800,h:1,sv:false},
+ {f:'2026-09-01',s:'S-04',p:'P03',d:'Calibración de joystick',cost:750,h:1.5,sv:true},
+ {f:'2026-09-22',s:'S-13',p:'P03',d:'Revisión general',cost:1500,h:3,sv:true},
+ {f:'2026-10-05',s:'S-08',p:'P03',d:'Cambio de controlador',cost:5400,h:2.5,sv:false},
+ {f:'2026-10-20',s:'S-06',p:'P04',d:'Cambio de llantas',cost:2400,h:1,sv:false}
+];
+const months = (from,to='2026-10') => { const [a,b]=from.split('-').map(Number),[c,d]=to.split('-').map(Number); const r=[]; let y=a,m=b; while(y<c||(y===c&&m<=d)){ r.push(`${y}-${String(m).padStart(2,'0')}`); m++; if(m>12){m=1;y++;} } return r; };
+let DON = [
+ {id:'D01',n:'Mariana López Garza',k:'Recurrente',em:'mariana.lopez@ejemplo.mx',m:250,since:'2025-11',fac:true,nx:'Enviar agradecimiento de fin de temporada',nf:'2026-11-05'},
+ {id:'D02',n:'Carlos Treviño Sada',k:'Recurrente',em:'ctrevino@ejemplo.mx',m:150,since:'2026-01',fac:false,nx:'',nf:''},
+ {id:'D03',n:'Ana Sofía Martínez Leal',k:'Recurrente',em:'anasofia.ml@ejemplo.mx',m:350,since:'2025-08',fac:true,nx:'Invitar al partido de exhibición',nf:'2026-11-12'},
+ {id:'D04',n:'Roberto Guajardo Peña',k:'Recurrente',em:'rguajardo@ejemplo.mx',m:250,since:'2026-03',fac:false,nx:'',nf:''},
+ {id:'D05',n:'Patricia Elizondo Garza',k:'Recurrente',em:'paty.elizondo@ejemplo.mx',m:150,since:'2026-05',fac:false,nx:'Pago rechazado: confirmar tarjeta',nf:'2026-10-31'},
+ {id:'D06',n:'Fernando Cavazos Ríos',k:'Recurrente',em:'fcavazos@ejemplo.mx',m:350,since:'2025-12',fac:true,nx:'',nf:''},
+ {id:'D07',n:'Lucía Benavides Sáenz',k:'Recurrente',em:'lucia.bs@ejemplo.mx',m:250,since:'2026-07',fac:false,nx:'',nf:''},
+ {id:'D08',n:'Héctor Zambrano Villarreal',k:'Recurrente',em:'hzambrano@ejemplo.mx',m:150,since:'2026-09',fac:false,nx:'Enviar bienvenida a donante nuevo',nf:'2026-11-01'},
+ {id:'D09',n:'Gabriela Montemayor Cantú',k:'Recurrente',em:'gaby.montemayor@ejemplo.mx',m:250,since:'2026-02',fac:true,nx:'',nf:''},
+ {id:'D10',n:'Ricardo Leal Treviño',k:'Recurrente',em:'rleal@ejemplo.mx',m:350,since:'2026-06',fac:false,nx:'',nf:''},
+ {id:'D11',n:'Isabel Chapa Garza',k:'Único',em:'isabel.chapa@ejemplo.mx',m:2000,since:'2026-10',fac:true,nx:'Invitar a donar mensualmente',nf:'2026-11-08',ev:'Cena “Entre Amigos”'},
+ {id:'D12',n:'Jorge Arredondo Salinas',k:'Único',em:'jarredondo@ejemplo.mx',m:1500,since:'2026-08',fac:false,nx:'',nf:''},
+ {id:'D13',n:'Familia Garza Lozano',k:'Único',em:'garzalozano@ejemplo.mx',m:5000,since:'2026-04',fac:true,nx:'',nf:''},
+ {id:'D14',n:'Constructora Valle Alto',k:'Patrocinador',em:'rse@vallealto.ejemplo.mx',m:60000,since:'2026-08',fac:true,nx:'Entregar reporte de impacto de temporada',nf:'2026-11-15',ap:'Apadrina a Gladiadores'},
+ {id:'D15',n:'Grupo Logístico del Norte',k:'Patrocinador',em:'contacto@glnorte.ejemplo.mx',m:45000,since:'2026-02',fac:true,nx:'Renovar convenio 2027',nf:'2026-12-01',ap:'Traslados de la liga (en especie)'},
+ {id:'D16',n:'Distribuidora Cumbres',k:'Patrocinador',em:'mkt@cumbres.ejemplo.mx',m:30000,since:'2026-05',fac:true,nx:'',nf:'',ap:'Apadrina la Liga de Desarrollo'},
+ {id:'D17',n:'Club Tigres',k:'Aliado institucional',em:'—',m:0,since:'2018',fac:false,nx:'',nf:'',ap:'Presta su marca e integra al equipo Tigres Powerchair'},
+ {id:'D18',n:'Club de Fútbol Monterrey (Rayados)',k:'Aliado institucional',em:'—',m:0,since:'2024',fac:false,nx:'',nf:'',ap:'Presta su marca e integra al equipo Rayados Powerchair'},
+ {id:'D19',n:'Clínica Aldim',k:'Aliado institucional',em:'—',m:0,since:'2026',fac:false,nx:'Dar seguimiento al equipo de León',nf:'2026-11-20',ap:'Coorganizó la primera clínica en León'},
+ {id:'D20',n:'Players of Life',k:'Medio',em:'—',m:0,since:'2025',fac:false,nx:'',nf:'',ap:'Difusión: entrevistas y notas sobre la asociación'}
+];
+DON.forEach(d=>{
+  if(d.k==='Recurrente') d.hist = months(d.since).map(mo=>({f:mo,m:d.m, st: d.id==='D05' && mo==='2026-10' ? 'Rechazado':'Cobrado'}));
+  else if(d.m) d.hist = [{f:d.since,m:d.m,st:'Cobrado'}];
+  else d.hist = [];
+});
+let PIPE = [
+ {e:'Constructora Valle Alto',a:60000,ap:'Equipo Gladiadores',st:3},
+ {e:'Grupo Logístico del Norte',a:45000,ap:'Traslados de la liga',st:3},
+ {e:'Distribuidora Cumbres',a:30000,ap:'Liga de Desarrollo',st:3},
+ {e:'Aceros del Cerro (ficticia)',a:80000,ap:'Selección Nacional',st:2},
+ {e:'Laboratorios Regios (ficticia)',a:50000,ap:'Mantenimiento de sillas',st:1},
+ {e:'Software Santa Lucía (ficticia)',a:25000,ap:'Clínicas de formación',st:0},
+ {e:'Hotel Parque Sur (ficticio)',a:20000,ap:'Hospedaje en torneos',st:0}
+];
+const STAGES = ['Prospecto','Contactado','Propuesta enviada','Firmado'];
+let MED = [
+ ['2018-02-17_General_Foto_PrimeraClinica.jpg','Foto','General','Primera clínica','Autorizada','Migrado'],
+ ['2018-08-03_General_Foto_ArranqueOficialLiga.jpg','Foto','General','Arranque oficial','Autorizada','Migrado'],
+ ['2019-06-01_General_Documento_AfiliacionFIPFA.pdf','Documento','General','Afiliación FIPFA','No requiere','Migrado'],
+ ['2020-03-10_General_Logo_PowerchairMX.png','Logo','General','Identidad','No requiere','Migrado'],
+ ['2022-09-15_Tigres_Foto_PresentacionUniformes.jpg','Foto','Tigres','Presentación','Autorizada','Migrado'],
+ ['2023-05-20_Seleccion_Foto_DebutLasRozas.jpg','Foto','Selección','Debut en Las Rozas','Autorizada','Migrado'],
+ ['2023-05-21_Seleccion_Video_ResumenLasRozas.mp4','Video','Selección','Debut en Las Rozas','Autorizada','Migrado'],
+ ['2023-05-25_Seleccion_Prensa_NotaDebut.pdf','Prensa','Selección','Debut en Las Rozas','No requiere','Migrado'],
+ ['2024-03-02_Rayados_Prensa_ComunicadoRayadosPowerchair.pdf','Prensa','Rayados','Presentación','No requiere','Migrado'],
+ ['2024-03-02_Rayados_Foto_PresentacionEquipo.jpg','Foto','Rayados','Presentación','Pendiente','Migrado'],
+ ['2024-11-09_SaltilloFC_Foto_JornadaLiga.jpg','Foto','Saltillo FC','Jornada de liga','Autorizada','Migrado'],
+ ['2025-04-12_Independiente_Foto_PartidoLocal.jpg','Foto','Independiente','Jornada de liga','Pendiente','Pendiente'],
+ ['2025-11-15_Seleccion_Foto_CopaAmericaPhoenix.jpg','Foto','Selección','Copa América 2025','Autorizada','Migrado'],
+ ['2025-11-19_Seleccion_Video_CopaAmericaResumen.mp4','Video','Selección','Copa América 2025','Autorizada','Migrado'],
+ ['2025-11-20_Seleccion_Prensa_CopaAmerica.pdf','Prensa','Selección','Copa América 2025','No requiere','Migrado'],
+ ['2026-03-14_Tuzos_Foto_EntrenamientoPachuca.jpg','Foto','Tuzos','Entrenamiento','Pendiente','Pendiente'],
+ ['2026-06-08_Leon_Foto_PrimeraClinicaLeon.jpg','Foto','León','Clínica en León','Autorizada','Migrado'],
+ ['2026-06-08_Leon_Documento_ProgramaClinica.pdf','Documento','León','Clínica en León','No requiere','Migrado'],
+ ['2026-08-15_Gladiadores_Foto_BienvenidaGladiadores.jpg','Foto','Gladiadores','Presentación','Autorizada','Migrado'],
+ ['2026-08-15_Gladiadores_Video_PrimerEntrenamiento.mp4','Video','Gladiadores','Entrenamiento','Pendiente','Pendiente'],
+ ['2026-09-27_Tigres_Foto_FinalTemporada.jpg','Foto','Tigres','Final de temporada','Autorizada','Migrado'],
+ ['2026-09-27_Tigres_Video_CampeonInvicto.mp4','Video','Tigres','Final de temporada','Autorizada','Migrado'],
+ ['2026-09-28_General_Prensa_FinDeTemporada.pdf','Prensa','General','Final de temporada','No requiere','Migrado'],
+ ['2026-10-16_General_Foto_CenaEntreAmigos.jpg','Foto','General','Cena “Entre Amigos”','Pendiente','Pendiente'],
+ ['2026-10-16_General_Logo_KitPatrocinadores.png','Logo','General','Kit de patrocinadores','No requiere','Pendiente']
+].map(([fn,tp,eq,ev,au,mg])=>({fn,tp,eq,ev,au,mg,y:fn.slice(0,4)}));
+const TIMELINE = [
+ ['oct 2017','Alberto Martínez García y Alejandro Maldonado deciden fundar la asociación.'],
+ ['feb 2018','Primera clínica de powerchair football, con 8 sillas.'],
+ ['3 ago 2018','Arranque oficial de la liga.'],
+ ['2019','Miembro mexicano de la FIPFA.'],
+ ['2023','Debut de la Selección Nacional, avalada por la Federación Mexicana de Fútbol. Torneo en Las Rozas, Madrid.'],
+ ['nov 2025','Primera competencia oficial: Copa América, clasificatoria al Mundial de Argentina 2026.'],
+ ['2026','Primera clínica en León, Guanajuato, con Clínica Aldim.'],
+ ['ago 2026','Nace Gladiadores Powerchair en Monterrey, con seis jugadores nuevos.'],
+ ['2026','Tigres, campeón invicto de la temporada; Rayados, segundo lugar.']
+];
+const INV = [
+ ['Fotos de partidos 2018–2026','Celular y Google Fotos de coordinación','JPG / MP4','Medios e historia',640,640],
+ ['Videos de la Selección','Disco duro externo','MP4','Medios e historia',85,85],
+ ['Notas de prensa','Correo de dirección','PDF / enlaces','Medios e historia',42,42],
+ ['Logos y kit de marca','Laptop de un voluntario de diseño','PNG / AI','Medios e historia',36,30],
+ ['Fotos en grupos de WhatsApp de equipos','WhatsApp (7 grupos)','JPG','Medios e historia',410,180],
+ ['Expedientes médicos','Carpetas físicas y PDF de familias','Papel / PDF','Expedientes de atletas',52,0],
+ ['Formatos de consentimiento','Carpeta física en la sede','Papel','Expedientes de atletas',52,0],
+ ['Lista de jugadores por equipo','Excel de coordinación deportiva','XLSX','Expedientes de atletas',7,0],
+ ['Asistencia a entrenamientos','Hojas de cada coordinador','XLSX / papel','Expedientes de atletas',24,0],
+ ['Inventario de sillas','Excel personal','XLSX','Proveedores',1,0],
+ ['Facturas de mantenimiento','Correo y fotos de tickets','PDF / JPG','Proveedores',118,0],
+ ['Contactos de talleres y proveedores','Agenda del celular','Contactos','Proveedores',1,0],
+ ['Cotizaciones de sillas','Correo de dirección','PDF','Proveedores',14,0],
+ ['Lista de donantes','Exportación de la pasarela + Excel','CSV / XLSX','Donantes y aliados',3,0],
+ ['Contratos de patrocinio','Laptop de procuración de fondos','PDF / DOCX','Donantes y aliados',26,0],
+ ['Recibos CFDI emitidos','Portal de facturación','XML / PDF','Donantes y aliados',210,0],
+ ['Presentaciones a patrocinadores','Google Drive personal','PPTX / PDF','Donantes y aliados',19,0],
+ ['Reportes de temporada','Correo y Drive personal','DOCX / PDF','Reportes',8,0]
+].map(([o,u,f,mod,n,mg])=>({o,u,f,mod,n,mg}));
+let LOG = [
+ {t:'27 oct 2026 · 18:02',r:'Encargado deportivo',a:'A03'},
+ {t:'24 oct 2026 · 10:15',r:'Dirección',a:'A10'}
+];
+
+/* ---------- roles ---------- */
+const ALL = ['inicio','atletas','proveedores','medios','donantes','inventario','reporte','ayuda'];
+const ROLES = {
+  direccion:{l:'Dirección',v:ALL,med:true},
+  deportivo:{l:'Encargado deportivo',v:['inicio','atletas','proveedores','medios','inventario','reporte','ayuda'],med:true},
+  fondos:{l:'Procuración de fondos',v:['inicio','donantes','medios','reporte','ayuda'],med:false},
+  coordinador:{l:'Coordinador · Gladiadores',v:['inicio','atletas','medios','ayuda'],med:false,team:'Gladiadores'},
+  voluntario:{l:'Voluntario',v:['medios','ayuda'],med:false}
+};
+const NAV = [
+  ['g','General'],['inicio','Inicio','home'],
+  ['g','Módulos'],['atletas','Expedientes de atletas','user'],['proveedores','Proveedores','wrench'],['medios','Medios e historia','image'],['donantes','Donantes y aliados','heart'],
+  ['g','Repositorio'],['inventario','Inventario y carpetas','folder'],['reporte','Reporte de impacto','doc'],['ayuda','Manual rápido','help']
+];
+const TITLES = Object.fromEntries(NAV.filter(n=>n[0]!=='g').map(n=>[n[0],n[1]]));
+
+const S = { role:'direccion', view:'inicio', ath:null, medOpen:new Set(), don:null, dTab:'registro',
+  af:{q:'',t:'',cat:'',con:''}, mf:{tp:'',eq:'',au:'',y:''}, df:{q:'',k:''}, rep:{aud:'Patrocinadores'} };
+const R = () => ROLES[S.role];
+const can = v => R().v.includes(v);
+
+/* ---------- cálculos ---------- */
+const recurrentes = () => DON.filter(d=>d.k==='Recurrente');
+const mensualRec = () => recurrentes().reduce((a,d)=>a+d.m,0);
+const svc = MANT.filter(m=>m.sv);
+const costoHora = () => Math.round(svc.reduce((a,m)=>a+m.cost,0) / svc.reduce((a,m)=>a+m.h,0));
+const invTot = () => INV.reduce((a,i)=>a+i.n,0);
+const invMig = () => INV.reduce((a,i)=>a+i.mg,0);
+const asignado = sid => ATH.find(a=>a.s===sid);
+const provName = id => (PROV.find(p=>p.id===id)||{}).n || id;
+
+/* ---------- navegación ---------- */
+function renderNav(){
+  $('#nav').innerHTML = NAV.map(n=>{
+    if(n[0]==='g') return `<div class="navlabel">${n[1]}</div>`;
+    const lk = !can(n[0]);
+    return `<a href="#${n[0]}" class="${S.view===n[0]?'on':''} ${lk?'locked':''}">${ic(n[2])}<span>${n[1]}</span>${lk?`<span class="lk" title="Sin acceso con este rol">${ic('lock',14)}</span>`:''}</a>`;
+  }).join('');
+}
+function go(){
+  const h = (location.hash||'').slice(1);
+  S.view = ALL.includes(h) ? h : (R().v[0]);
+  render();
+}
+window.addEventListener('hashchange',go);
+$('#role').addEventListener('change',e=>{
+  S.role = e.target.value; S.medOpen.clear(); S.ath=null; S.don=null;
+  if(!can(S.view)){ location.hash = R().v[0]; } else render();
+  toast(`Ahora ves el repositorio como: ${R().l}`);
+});
+
+function render(){
+  renderNav();
+  const m = $('#main');
+  if(!can(S.view)){ m.innerHTML = lockedView(S.view); return; }
+  m.innerHTML = ({inicio:vInicio,atletas:vAtletas,proveedores:vProv,medios:vMedios,donantes:vDon,inventario:vInv,reporte:vRep,ayuda:vAyuda}[S.view])();
+  bind();
+}
+function lockedView(v){
+  const who = ALL.filter(x=>x===v).length ? Object.values(ROLES).filter(r=>r.v.includes(v)).map(r=>r.l).join(', ') : '';
+  return `<div class="head"><div><h1>${esc(TITLES[v])}</h1></div></div>
+  <div class="lockbox" style="max-width:620px">${ic('lock',22)}<div><b style="color:var(--ink)">Tu rol (${esc(R().l)}) no tiene acceso a este módulo.</b>
+  <p style="margin-top:4px">Pueden verlo: ${esc(who)}. Si lo necesitas para tu trabajo, pide acceso a Dirección. Cambia el rol en la parte superior para ver cómo cambia la interfaz.</p></div></div>`;
+}
+
+/* ---------- INICIO ---------- */
+function vInicio(){
+  const rec = recurrentes().length, pct = rec/500*100;
+  const enS = CHAIRS.filter(c=>c.st==='En servicio').length, enM = CHAIRS.length-enS;
+  const tot = invTot(), mig = invMig();
+  const byTeam = Object.keys(TEAMS).map(t=>[t,ATH.filter(a=>a.t===t).length]);
+  const mx = Math.max(...byTeam.map(b=>b[1]));
+  const pend = ATH.filter(a=>a.con==='Pendiente').length;
+  const sinSilla = ATH.filter(a=>!a.s).length;
+  const acc = DON.filter(d=>d.nx).length;
+  const authP = MED.filter(x=>x.au==='Pendiente').length;
+  const att = [
+    pend && ['alert','warn',`${pend} consentimientos pendientes`,'Sin consentimiento firmado no se debe capturar información médica.','atletas'],
+    enM && ['chair','warn',`${enM} sillas en mantenimiento`,'S-08 (cambio de controlador) y S-14 (diagnóstico eléctrico).','proveedores'],
+    sinSilla && ['chair','bad',`${sinSilla} atletas sin silla deportiva`,'Están en lista de espera; cada silla cuesta cerca de 10,000 USD.','atletas'],
+    acc && ['heart','info',`${acc} acciones de seguimiento con donantes y aliados`,'Agradecimientos, renovaciones e invitaciones con fecha.','donantes'],
+    authP && ['image','neu',`${authP} archivos sin autorización de uso de imagen`,'No se publican hasta tener la autorización firmada.','medios']
+  ].filter(Boolean);
+  const mods = [['atletas','user','Expedientes de atletas','Datos generales, consentimiento, silla asignada y sección médica restringida.'],
+    ['proveedores','wrench','Proveedores','Talleres, refacciones, transporte y bitácora de mantenimiento de sillas.'],
+    ['medios','image','Medios e historia','Fotos, videos, prensa y línea de tiempo. Módulo piloto de migración.'],
+    ['donantes','heart','Donantes y aliados','Registro único de donantes, patrocinios y aliados, sin duplicados.']];
+  return `
+  <div class="head"><div><h1>Panel general</h1><p class="sub">Temporada 2026. Todo lo que hoy vive en archivos personales, en un solo lugar.</p></div>
+  ${can('reporte')?`<a class="btn primary" href="#reporte">${ic('doc',16)} Armar reporte de impacto</a>`:''}</div>
+  <div class="stack">
+  <div class="kpis">
+    <div class="tile"><span class="lbl">Atletas en el repositorio</span><span class="big">${ATH.length}</span><span class="foot">Muestra de ejemplo · la liga registra 52</span></div>
+    <div class="tile"><span class="lbl">Donantes recurrentes</span><span class="big">${rec} <small>/ 500</small></span><div class="track warm"><i style="width:${Math.max(pct,1.5)}%"></i></div><span class="foot">${mxn(mensualRec())} al mes · meta de la OSF: 500</span></div>
+    <div class="tile"><span class="lbl">Sillas deportivas</span><span class="big">${enS} <small>en servicio</small></span><span class="foot">${enM} en mantenimiento · ${CHAIRS.length} en total</span></div>
+    <div class="tile"><span class="lbl">Archivos migrados</span><span class="big">${int(mig)} <small>/ ${int(tot)}</small></span><div class="track"><i style="width:${mig/tot*100}%"></i></div><span class="foot">${Math.round(mig/tot*100)} % del inventario ya está en el repositorio</span></div>
+  </div>
+  <div class="grid2">
+    <div class="panel"><h2>Requiere atención</h2><div class="list">
+      ${att.map(([i,c,t,d,v])=>`<div><span class="ico pill ${c}" style="padding:0">${ic(i,16)}</span><div style="flex:1;min-width:0"><b>${t}</b><p class="muted" style="font-size:13.5px">${d}</p></div>${can(v)?`<a class="btn sm" href="#${v}">Ver</a>`:`<span class="pill neu">${ic('lock',12)} Sin acceso</span>`}</div>`).join('')}
+    </div></div>
+    <div class="panel"><h2>Atletas por equipo</h2><div class="bars">
+      ${byTeam.map(([t,n])=>`<div class="barrow"><span>${esc(t)}</span><div class="track"><i style="width:${n/mx*100}%"></i></div><span class="num muted">${n}</span></div>`).join('')}
+    </div><p class="muted" style="font-size:12.5px;margin-top:12px">Datos de ejemplo: ${ATH.length} atletas en ${Object.keys(TEAMS).length} equipos.</p></div>
+  </div>
+  <div><h2 style="margin-bottom:10px">Módulos</h2><div class="grid4">
+    ${mods.map(([v,i,t,d])=>`<a class="modcard ${can(v)?'':'lock'}" href="#${v}"><span class="mi">${ic(can(v)?i:'lock',18)}</span><b>${t}</b><span class="muted" style="font-size:13.5px">${d}</span></a>`).join('')}
+  </div></div>
+  </div>`;
+}
+
+/* ---------- ATLETAS ---------- */
+function vAtletas(){
+  const f = S.af, team = R().team;
+  let list = ATH.filter(a=>!team || a.t===team);
+  const rows = list.filter(a=>(!f.q||norm(a.n).includes(norm(f.q))) && (!f.t||a.t===f.t) && (!f.cat||a.cat===f.cat) && (!f.con||a.con===f.con));
+  if(S.ath && !list.find(a=>a.id===S.ath)) S.ath=null;
+  const sel = ATH.find(a=>a.id===S.ath);
+  return `
+  <div class="head"><div><h1>Expedientes de atletas</h1><p class="sub">${team?`Como coordinador solo ves a los atletas de <b>${esc(team)}</b>, sin sección médica.`:'Datos generales visibles para el equipo deportivo. La sección médica está separada y solo la abre quien tiene permiso.'}</p></div>
+  <span class="pill warn">${ic('lock',13)} Dato sensible</span></div>
+  <div class="filters">
+    <div class="searchbox">${ic('search',16)}<input id="af-q" placeholder="Buscar atleta" value="${esc(f.q)}" aria-label="Buscar atleta"></div>
+    ${team?'':`<select id="af-t" aria-label="Equipo"><option value="">Todos los equipos</option>${Object.keys(TEAMS).map(t=>`<option ${f.t===t?'selected':''}>${t}</option>`).join('')}</select>`}
+    <select id="af-cat" aria-label="Categoría"><option value="">Todas las categorías</option>${['La Liga','Liga de Desarrollo'].map(t=>`<option ${f.cat===t?'selected':''}>${t}</option>`).join('')}</select>
+    <select id="af-con" aria-label="Consentimiento"><option value="">Consentimiento: todos</option>${['Firmado','Pendiente'].map(t=>`<option ${f.con===t?'selected':''}>${t}</option>`).join('')}</select>
+  </div>
+  <div class="grid2">
+    <div class="tbl"><table><thead><tr><th>Atleta</th><th>Equipo</th><th>Clase</th><th>Consentimiento</th><th>Silla</th></tr></thead><tbody>
+    ${rows.map(a=>`<tr class="click ${S.ath===a.id?'sel':''}" data-ath="${a.id}" tabindex="0"><td><b>${esc(a.n)}</b><div class="muted" style="font-size:12.5px">${a.e} años · ${esc(a.cat)}</div></td><td>${esc(a.t)}</td><td class="mono">${a.cl}</td>
+      <td>${a.con==='Firmado'?`<span class="pill ok">${ic('check',12)} Firmado</span>`:`<span class="pill warn">Pendiente</span>`}</td>
+      <td class="mono">${a.s||'<span class="pill bad">Sin silla</span>'}</td></tr>`).join('') || `<tr><td colspan="5" class="muted">No hay atletas con esos filtros.</td></tr>`}
+    </tbody></table></div>
+    <div class="panel">${sel?athDetail(sel):`<div class="muted" style="display:flex;flex-direction:column;gap:8px;align-items:flex-start">${ic('user',26)}<b style="color:var(--ink)">Selecciona un atleta</b><span>Verás su ficha: datos generales, consentimiento, silla y mantenimiento, torneos y, si tu rol lo permite, la sección médica.</span></div>`}</div>
+  </div>`;
+}
+function athDetail(a){
+  const minor = a.e<18, ch = CHAIRS.find(c=>c.id===a.s), hist = MANT.filter(m=>m.s===a.s);
+  const open = S.medOpen.has(a.id), logs = LOG.filter(l=>l.a===a.id);
+  return `
+  <div class="panel-h"><div><h2>${esc(a.n)}</h2><span class="muted mono">${a.id} · ${esc(a.t)}</span></div>${a.con==='Firmado'?`<span class="pill ok">Consentimiento firmado</span>`:`<span class="pill warn">Consentimiento pendiente</span>`}</div>
+  <dl class="kv">
+    <dt>Edad</dt><dd>${a.e} años${minor?' · menor de edad':''}</dd>
+    <dt>Ciudad</dt><dd>${esc(a.c)}</dd>
+    <dt>Categoría</dt><dd>${esc(a.cat)}</dd>
+    <dt>Clase funcional</dt><dd class="mono">${a.cl}</dd>
+    ${minor?`<dt>Tutor</dt><dd>${esc(a.tutor)}</dd>`:''}
+    <dt>Asistencia</dt><dd class="num">${a.as} % en 2026</dd>
+    <dt>Torneos</dt><dd>${a.tor.length?a.tor.map(esc).join('<br>'):'<span class="muted">Aún sin torneos</span>'}</dd>
+  </dl>
+  <div class="sect"><div class="sect-t">Consentimiento y privacidad</div>
+    ${a.con==='Firmado'?`<div class="alert ok">${ic('check',16)}<span>Consentimiento expreso firmado el ${fdate(a.conF)}${minor?' por su tutor':''}. Aviso de privacidad aceptado.</span></div>`
+    :`<div class="alert warn">${ic('alert',16)}<span>Falta el consentimiento firmado${minor?' del tutor':''} y la aceptación del aviso de privacidad. Hasta tenerlos, la sección médica queda vacía.</span></div>`}
+  </div>
+  <div class="sect"><div class="sect-t">Silla y mantenimiento</div>
+    ${ch?`<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><span class="mono"><b>${ch.id}</b></span><span class="pill ${ch.st==='En servicio'?'ok':'warn'}">${ch.st}</span><span class="muted" style="font-size:13px">En la asociación desde ${ch.y}</span></div>
+      ${hist.length?`<div class="list">${hist.map(m=>`<div><span class="mono muted" style="flex:none;width:84px">${fdate(m.f)}</span><div style="flex:1;min-width:0">${esc(m.d)}<div class="muted" style="font-size:12.5px">${esc(provName(m.p))}</div></div><span class="num">${mxn(m.cost)}</span></div>`).join('')}</div>`:'<span class="muted" style="font-size:13.5px">Sin servicios registrados en 2026.</span>'}`
+      :`<div class="alert bad">${ic('chair',16)}<span>Sin silla deportiva asignada. Está en lista de espera.</span></div>`}
+  </div>
+  <div class="sect"><div class="sect-t">Sección médica <span class="pill warn">${ic('lock',12)} Restringida</span></div>
+    ${!R().med?`<div class="lockbox">${ic('lock',18)}<span>Solo Dirección y el Encargado deportivo pueden abrir esta sección. Tu rol: ${esc(R().l)}.</span></div>`
+      : a.con!=='Firmado'?`<div class="lockbox">${ic('lock',18)}<span>No hay información médica capturada porque falta el consentimiento firmado.</span></div>`
+      : open?`<div class="medbox"><dl class="kv"><dt>Diagnóstico</dt><dd>${esc(a.dx)}</dd><dt>Notas</dt><dd>${esc(a.nt)}</dd><dt>Cuidados</dt><dd>${esc(a.rs)}</dd></dl>
+        <span style="font-size:12.5px;color:var(--warm-ink)">Esta consulta quedó registrada en la bitácora de accesos.</span></div>`
+      : `<div class="lockbox" style="align-items:center;justify-content:space-between;flex-wrap:wrap">${ic('lock',18)}<span style="flex:1;min-width:160px">Contiene diagnóstico y cuidados. Cada apertura queda registrada.</span><button class="btn" data-med="${a.id}">${ic('unlock',15)} Abrir sección médica</button></div>`}
+    ${R().med?`<div><div class="sect-t" style="margin-top:4px">Bitácora de accesos</div>${logs.length?`<div class="list" style="margin-top:6px">${logs.map(l=>`<div style="font-size:13px"><span class="muted">${ic('clock',14)}</span><span>${esc(l.t)} · ${esc(l.r)} consultó la sección médica</span></div>`).join('')}</div>`:'<p class="muted" style="font-size:13px;margin-top:4px">Nadie ha consultado esta sección.</p>'}</div>`:''}
+  </div>`;
+}
+
+/* ---------- PROVEEDORES ---------- */
+function vProv(){
+  const ch = costoHora(), hrs = (250/ch);
+  const tot26 = MANT.reduce((a,m)=>a+m.cost,0);
+  return `
+  <div class="head"><div><h1>Proveedores</h1><p class="sub">Directorio de quienes mantienen la liga en movimiento y bitácora de cada servicio a las sillas.</p></div></div>
+  <div class="stack">
+  <div class="kpis">
+    <div class="tile"><span class="lbl">Costo por hora de servicio técnico</span><span class="big">${mxn(ch)}</span><span class="foot">Promedio de ${svc.length} servicios de mano de obra en la bitácora</span></div>
+    <div class="tile"><span class="lbl">Dato para el simulador de impacto</span><span class="big">${hrs.toFixed(1).replace('.',',')} h</span><span class="foot">de servicio técnico se financian con un donativo de $250 MXN</span></div>
+    <div class="tile"><span class="lbl">Gasto en mantenimiento 2026</span><span class="big">${mxn(tot26)}</span><span class="foot">${MANT.length} servicios a ${new Set(MANT.map(m=>m.s)).size} sillas</span></div>
+  </div>
+  <div class="alert info">${ic('heart',16)}<span>Este módulo alimenta a la propuesta de donaciones: el simulador de impacto usa el costo real por hora calculado aquí, no una estimación.</span></div>
+  <div class="panel"><div class="panel-h"><h2>Bitácora de mantenimiento</h2><span class="muted" style="font-size:13px">2026 · datos de ejemplo</span></div>
+  <div class="tbl"><table><thead><tr><th>Fecha</th><th>Silla</th><th>Servicio</th><th>Proveedor</th><th class="r">Horas</th><th class="r">Costo</th><th>Tipo</th></tr></thead><tbody>
+  ${MANT.slice().reverse().map(m=>`<tr><td class="mono">${m.f}</td><td class="mono">${m.s}</td><td>${esc(m.d)}</td><td>${esc(provName(m.p))}</td><td class="r">${String(m.h).replace('.',',')}</td><td class="r">${mxn(m.cost)}</td><td>${m.sv?'<span class="pill info">Servicio técnico</span>':'<span class="pill neu">Refacción</span>'}</td></tr>`).join('')}
+  </tbody></table></div></div>
+  <div class="panel"><div class="panel-h"><h2>Directorio</h2><span class="muted" style="font-size:13px">${PROV.length} proveedores</span></div>
+  <div class="tbl"><table><thead><tr><th>Proveedor</th><th>Categoría</th><th>Contacto</th><th>Costo de referencia</th><th class="r">Servicios 2026</th></tr></thead><tbody>
+  ${PROV.map(p=>{const n=MANT.filter(m=>m.p===p.id).length; return `<tr><td><b>${esc(p.n)}</b><div class="muted" style="font-size:12.5px">${esc(p.c)}</div></td><td>${esc(p.cat)}</td><td>${esc(p.ct)}<div class="mono muted">${esc(p.tel)}</div><div class="mono muted" style="overflow-wrap:anywhere">${esc(p.em)}</div></td><td style="font-size:13.5px">${esc(p.ref)}</td><td class="r">${n||'—'}</td></tr>`}).join('')}
+  </tbody></table></div></div>
+  </div>`;
+}
+
+/* ---------- MEDIOS ---------- */
+const slug = s => norm(s).split(' ').filter(Boolean).map(w=>w[0].toUpperCase()+w.slice(1)).join('').replace(/[^A-Za-z0-9]/g,'');
+function vMedios(){
+  const f = S.mf;
+  const rows = MED.filter(x=>(!f.tp||x.tp===f.tp)&&(!f.eq||x.eq===f.eq)&&(!f.au||x.au===f.au)&&(!f.y||x.y===f.y)).sort((a,b)=>b.fn.localeCompare(a.fn));
+  const eqs = [...new Set(MED.map(x=>x.eq))], yrs=[...new Set(MED.map(x=>x.y))].sort().reverse();
+  const mig = MED.filter(x=>x.mg==='Migrado').length;
+  return `
+  <div class="head"><div><h1>Medios e historia</h1><p class="sub">Módulo piloto: es el de menor riesgo porque no tiene datos médicos, así que se migra primero.</p></div>
+  <span class="pill info">Piloto · ${mig} de ${MED.length} migrados</span></div>
+  <div class="stack">
+  <div class="grid2">
+    <div class="panel"><h2>Agregar archivo</h2>
+      <div class="formgrid">
+        <label class="field">Fecha<input type="date" id="nf-f" value="2026-10-29"></label>
+        <label class="field">Equipo<select id="nf-eq"><option>General</option><option>Selección</option>${Object.keys(TEAMS).map(t=>`<option>${t}</option>`).join('')}</select></label>
+        <label class="field">Tipo<select id="nf-tp">${['Foto','Video','Prensa','Documento','Logo'].map(t=>`<option>${t}</option>`).join('')}</select></label>
+        <label class="field">Uso de imagen<select id="nf-au"><option>Autorizada</option><option>Pendiente</option><option>No requiere</option></select></label>
+        <label class="field full">Descripción corta<input id="nf-d" placeholder="Ej. partido de exhibición" maxlength="60"></label>
+      </div>
+      <p class="muted" style="font-size:13px;margin:12px 0 6px">Nombre que tendrá el archivo:</p>
+      <div class="namebox" id="nf-name"></div>
+      <div id="nf-msg" style="margin-top:8px"></div>
+      <div style="margin-top:12px"><button class="btn primary" id="nf-add">${ic('plus',16)} Agregar al repositorio</button></div>
+    </div>
+    <div class="panel"><h2>Línea de tiempo</h2><div class="tl">${TIMELINE.map(([y,d])=>`<div><span class="y">${y}</span><span class="d">${esc(d)}</span></div>`).join('')}</div></div>
+  </div>
+  <div>
+  <div class="filters">
+    <select id="mf-tp" aria-label="Tipo"><option value="">Todos los tipos</option>${['Foto','Video','Prensa','Documento','Logo'].map(t=>`<option ${f.tp===t?'selected':''}>${t}</option>`).join('')}</select>
+    <select id="mf-y" aria-label="Año"><option value="">Todos los años</option>${yrs.map(t=>`<option ${f.y===t?'selected':''}>${t}</option>`).join('')}</select>
+    <select id="mf-eq" aria-label="Equipo"><option value="">Todos los equipos</option>${eqs.map(t=>`<option ${f.eq===t?'selected':''}>${t}</option>`).join('')}</select>
+    <select id="mf-au" aria-label="Autorización"><option value="">Autorización: todas</option>${['Autorizada','Pendiente','No requiere'].map(t=>`<option ${f.au===t?'selected':''}>${t}</option>`).join('')}</select>
+  </div>
+  <div class="mgrid">${rows.map(x=>`<div class="mcard"><div class="thumb t-${x.tp}">${ic(TYPE_ICON[x.tp],30)}<span class="yr">${x.y}</span></div>
+    <div class="mbody"><b style="font-size:14px">${esc(x.ev)}</b><span class="fn">${esc(x.fn)}</span>
+    <div class="row"><span class="pill ${x.au==='Autorizada'?'ok':x.au==='Pendiente'?'warn':'neu'}">${x.au==='No requiere'?'Sin imagen de personas':'Imagen '+x.au.toLowerCase()}</span>${x.mg==='Pendiente'?'<span class="pill neu">Por migrar</span>':''}</div></div></div>`).join('') || '<p class="muted">No hay archivos con esos filtros.</p>'}</div>
+  </div></div>`;
+}
+function nfName(){
+  const f=$('#nf-f').value, eq=slug($('#nf-eq').value), tp=$('#nf-tp').value, d=slug($('#nf-d').value);
+  const ext = {Foto:'.jpg',Video:'.mp4',Prensa:'.pdf',Documento:'.pdf',Logo:'.png'}[tp];
+  $('#nf-name').textContent = `${f||'AAAA-MM-DD'}_${eq}_${tp}_${d||'Descripcion'}${ext}`;
+  return {ok: !!f && d.length>=3, name:$('#nf-name').textContent, f, tp, eq:$('#nf-eq').value, d:$('#nf-d').value};
+}
+
+/* ---------- DONANTES ---------- */
+function vDon(){
+  return `
+  <div class="head"><div><h1>Donantes y aliados</h1><p class="sub">Un solo registro para donantes, patrocinadores, aliados y medios. Cada persona o empresa aparece una sola vez.</p></div></div>
+  <div class="kpis" style="margin-bottom:16px">
+    <div class="tile"><span class="lbl">Recurrentes activos</span><span class="big">${recurrentes().length} <small>/ 500</small></span><div class="track warm"><i style="width:${Math.max(recurrentes().length/5,1.5)}%"></i></div></div>
+    <div class="tile"><span class="lbl">Ingreso recurrente mensual</span><span class="big">${mxn(mensualRec())}</span><span class="foot">Donativos de $150 a $350 MXN</span></div>
+    <div class="tile"><span class="lbl">Patrocinios firmados</span><span class="big">${mxn(PIPE.filter(p=>p.st===3).reduce((a,p)=>a+p.a,0))}</span><span class="foot">${PIPE.filter(p=>p.st===3).length} empresas · ${PIPE.filter(p=>p.st<3).length} en proceso</span></div>
+  </div>
+  <div class="tabs" role="tablist"><button class="${S.dTab==='registro'?'on':''}" data-tab="registro">Registro</button><button class="${S.dTab==='nuevo'?'on':''}" data-tab="nuevo">Nuevo registro</button><button class="${S.dTab==='pipe'?'on':''}" data-tab="pipe">Patrocinios</button></div>
+  ${S.dTab==='registro'?donReg():S.dTab==='nuevo'?donNew():donPipe()}`;
+}
+const KPILL = {Recurrente:'info','Único':'neu',Patrocinador:'warn','Aliado institucional':'ok',Medio:'neu'};
+function donReg(){
+  const f=S.df;
+  const rows = DON.filter(d=>(!f.q||norm(d.n+' '+d.em).includes(norm(f.q)))&&(!f.k||d.k===f.k));
+  const sel = DON.find(d=>d.id===S.don);
+  return `<div class="filters"><div class="searchbox">${ic('search',16)}<input id="df-q" placeholder="Buscar por nombre o correo" value="${esc(f.q)}" aria-label="Buscar donante"></div>
+    <select id="df-k" aria-label="Tipo"><option value="">Todos los tipos</option>${Object.keys(KPILL).map(k=>`<option ${f.k===k?'selected':''}>${k}</option>`).join('')}</select></div>
+  <div class="grid2"><div class="tbl"><table><thead><tr><th>Nombre</th><th>Tipo</th><th class="r">Aportación</th><th>Próxima acción</th></tr></thead><tbody>
+  ${rows.map(d=>`<tr class="click ${S.don===d.id?'sel':''}" data-don="${d.id}" tabindex="0"><td><b>${esc(d.n)}</b><div class="muted mono" style="font-size:12px;overflow-wrap:anywhere">${esc(d.em)}</div></td><td><span class="pill ${KPILL[d.k]}">${d.k}</span></td>
+    <td class="r">${d.m?mxn(d.m)+(d.k==='Recurrente'?'<span class="muted">/mes</span>':d.k==='Patrocinador'?'<span class="muted">/año</span>':''):'<span class="muted">—</span>'}</td>
+    <td style="font-size:13.5px">${d.nx?`${esc(d.nx)}<div class="muted">${fdate(d.nf)}</div>`:'<span class="muted">—</span>'}</td></tr>`).join('') || '<tr><td colspan="4" class="muted">Sin resultados.</td></tr>'}
+  </tbody></table></div>
+  <div class="panel">${sel?donDetail(sel):`<div class="muted" style="display:flex;flex-direction:column;gap:8px">${ic('heart',26)}<b style="color:var(--ink)">Selecciona un registro</b><span>Verás su historial de aportaciones, si requiere factura y la próxima acción del responsable.</span></div>`}</div></div>`;
+}
+function donDetail(d){
+  const tot = d.hist.filter(h=>h.st==='Cobrado').reduce((a,h)=>a+h.m,0);
+  return `<div class="panel-h"><div><h2>${esc(d.n)}</h2><span class="muted mono">${d.id}</span></div><span class="pill ${KPILL[d.k]}">${d.k}</span></div>
+  <dl class="kv"><dt>Desde</dt><dd>${d.since.length>4?fdate(d.since):d.since}</dd>
+    ${d.ap?`<dt>Relación</dt><dd>${esc(d.ap)}</dd>`:''}
+    ${d.m?`<dt>Total aportado</dt><dd class="num">${mxn(tot)}</dd>`:''}
+    ${d.m?`<dt>Factura</dt><dd>${d.fac?'Sí · CFDI uso “Donativos”':'No requiere'}</dd>`:''}
+    ${d.ev?`<dt>Origen</dt><dd>${esc(d.ev)}</dd>`:''}
+    <dt>Responsable</dt><dd>Procuración de fondos</dd></dl>
+  <div class="sect"><div class="sect-t">Próxima acción</div>
+    ${d.nx?`<div class="alert ${d.nx.startsWith('Pago')?'bad':'info'}">${ic(d.nx.startsWith('Pago')?'alert':'clock',16)}<span style="flex:1">${esc(d.nx)} · ${fdate(d.nf)}</span></div><div><button class="btn sm" data-done="${d.id}">${ic('check',14)} Marcar como hecha</button></div>`:'<span class="muted" style="font-size:13.5px">Sin acciones pendientes.</span>'}</div>
+  ${d.hist.length?`<div class="sect"><div class="sect-t">Historial de aportaciones</div><div class="list">${d.hist.slice().reverse().slice(0,8).map(h=>`<div style="font-size:13.5px"><span class="mono muted" style="flex:none;width:76px">${fdate(h.f)}</span><span style="flex:1">${h.st==='Rechazado'?'<span class="pill bad">Rechazado</span>':'<span class="pill ok">Cobrado</span>'}</span><span class="num">${mxn(h.m)}</span></div>`).join('')}${d.hist.length>8?`<p class="muted" style="font-size:12.5px;padding-top:8px">y ${d.hist.length-8} aportaciones anteriores</p>`:''}</div></div>`:''}`;
+}
+function donNew(){
+  return `<div class="panel" style="max-width:640px"><h2>Nuevo registro</h2>
+  <p class="muted" style="font-size:13.5px;margin:-4px 0 14px">Mientras escribes, el sistema revisa si la persona o empresa ya existe. Prueba con “mariana lopez” o “Valle Alto”.</p>
+  <div class="formgrid">
+    <label class="field full">Nombre o razón social<input id="nd-n" autocomplete="off"></label>
+    <label class="field">Correo<input id="nd-e" type="email" autocomplete="off"></label>
+    <label class="field">Tipo<select id="nd-k">${Object.keys(KPILL).map(k=>`<option>${k}</option>`).join('')}</select></label>
+    <label class="field">Aportación (MXN)<select id="nd-m"><option value="150">$150 al mes</option><option value="250" selected>$250 al mes</option><option value="350">$350 al mes</option><option value="0">Otra / en especie</option></select></label>
+    <label class="field">Factura<select id="nd-f"><option value="1">Sí, CFDI “Donativos”</option><option value="0">No</option></select></label>
+  </div>
+  <div id="nd-dup" style="margin-top:12px"></div>
+  <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap"><button class="btn primary" id="nd-save">${ic('plus',16)} Guardar registro</button></div></div>`;
+}
+function findDups(n,e){
+  const nn=norm(n), ne=norm(e); if(nn.length<4 && ne.length<4) return [];
+  return DON.filter(d=>{ const dn=norm(d.n);
+    if(ne.length>4 && norm(d.em)===ne) return true;
+    if(nn.length<4) return false;
+    if(dn===nn || dn.includes(nn) || nn.includes(dn)) return true;
+    const t1=nn.split(' '), t2=dn.split(' '); const shared=t1.filter(t=>t.length>2 && t2.some(u=>lev(t,u)<=1)).length;
+    return shared>=2 || lev(nn,dn)<=3; });
+}
+function donPipe(){
+  return `<p class="muted" style="font-size:13.5px;margin-bottom:12px">Seguimiento de empresas que “apadrinan” un equipo, la liga o una necesidad concreta. Mueve cada tarjeta cuando cambie su estado.</p>
+  <div class="kanban">${STAGES.map((s,i)=>{const it=PIPE.map((p,j)=>({...p,j})).filter(p=>p.st===i); return `<div class="col"><h3><span>${s}</span><span class="num">${it.length}</span></h3>
+    ${it.map(p=>`<div class="kcard"><b>${esc(p.e)}</b><span class="muted" style="font-size:13px">${esc(p.ap)}</span><span class="num">${mxn(p.a)} al año</span>
+    <div class="mv"><button class="btn sm" data-mv="${p.j}" data-d="-1" ${i===0?'disabled':''} aria-label="Mover a la etapa anterior">${ic('left',14)}</button><button class="btn sm" data-mv="${p.j}" data-d="1" ${i===3?'disabled':''} aria-label="Mover a la siguiente etapa">${ic('right',14)}</button></div></div>`).join('')}
+  </div>`}).join('')}</div>`;
+}
+
+/* ---------- INVENTARIO ---------- */
+function vInv(){
+  const tot=invTot(), mig=invMig();
+  const byMod = [...new Set(INV.map(i=>i.mod))].map(m=>{const r=INV.filter(i=>i.mod===m); return [m, r.reduce((a,i)=>a+i.n,0), r.reduce((a,i)=>a+i.mg,0)];});
+  return `
+  <div class="head"><div><h1>Inventario y carpetas</h1><p class="sub">Qué archivos existen, quién los tiene hoy, en qué formato y si ya están en el repositorio.</p></div></div>
+  <div class="stack">
+  <div class="kpis">
+    <div class="tile"><span class="lbl">Archivos inventariados</span><span class="big">${int(tot)}</span><span class="foot">${INV.length} conjuntos de información · estimación de ejemplo</span></div>
+    <div class="tile"><span class="lbl">Ya en el repositorio</span><span class="big">${int(mig)} <small>${Math.round(mig/tot*100)} %</small></span><div class="track"><i style="width:${mig/tot*100}%"></i></div></div>
+    ${byMod.slice(0,1).map(([m,n,g])=>`<div class="tile"><span class="lbl">Piloto: ${m}</span><span class="big">${Math.round(g/n*100)} %</span><span class="foot">${int(g)} de ${int(n)} archivos migrados</span></div>`).join('')}
+  </div>
+  <div class="panel"><h2>Avance por módulo</h2><div class="bars">${byMod.map(([m,n,g])=>`<div class="barrow" style="grid-template-columns:170px minmax(0,1fr) 64px"><span>${m}</span><div class="track"><i style="width:${Math.max(g/n*100,0)}%"></i></div><span class="num muted" style="text-align:right">${Math.round(g/n*100)} %</span></div>`).join('')}</div></div>
+  <div class="tbl"><table><thead><tr><th>Información</th><th>Dónde está hoy</th><th>Formato</th><th>Módulo</th><th class="r">Archivos</th><th>Estado</th></tr></thead><tbody>
+  ${INV.map(i=>{const st=i.mg===i.n?['ok','Migrado']:i.mg>0?['info','En proceso']:['neu','Pendiente']; return `<tr><td><b>${esc(i.o)}</b>${i.mod==='Expedientes de atletas'?' <span class="pill warn" style="margin-left:4px">Sensible</span>':''}</td><td>${esc(i.u)}</td><td class="mono">${esc(i.f)}</td><td>${esc(i.mod)}</td><td class="r">${int(i.n)}</td><td><span class="pill ${st[0]}">${st[1]}${st[1]==='En proceso'?` · ${Math.round(i.mg/i.n*100)} %`:''}</span></td></tr>`}).join('')}
+  </tbody></table></div>
+  <div class="grid2 even">
+    <div class="panel"><h2>Estructura de carpetas</h2><pre class="tree">PowerchairMX/
+├── 00_Administracion/
+│   ├── Manual_del_repositorio/
+│   └── Avisos_de_privacidad/
+├── <span class="rs">01_Atletas/            [restringido]</span>
+│   ├── Expedientes/           <span class="c">una carpeta por atleta</span>
+│   ├── <span class="rs">Medico/              [solo Dirección y Deportivo]</span>
+│   ├── Consentimientos/
+│   └── Asistencia/
+├── 02_Proveedores/
+│   ├── Directorio/
+│   ├── Mantenimiento_sillas/  <span class="c">una carpeta por silla</span>
+│   └── Cotizaciones/
+├── 03_Medios_e_Historia/      <span class="c">piloto</span>
+│   ├── Fotos/AAAA/
+│   ├── Videos/AAAA/
+│   ├── Prensa/
+│   ├── Logos/
+│   └── Historia/
+├── 04_Donantes_y_Aliados/
+│   ├── Donantes/
+│   ├── Patrocinios/
+│   ├── Convenios/
+│   └── Recibos_CFDI/
+└── 05_Reportes/
+    ├── Impacto/
+    └── Patrocinadores/</pre></div>
+    <div class="panel"><h2>Reglas de nombres</h2>
+      <p class="muted" style="font-size:14px">Todo archivo se nombra igual, para encontrarlo por fecha, equipo o tipo sin abrirlo.</p>
+      <div class="namebox" style="margin:12px 0">AAAA-MM-DD_Equipo_Tipo_Descripcion.ext</div>
+      <div class="list" style="font-size:14px">
+        <div><span class="pill ok" style="flex:none">${ic('check',12)}</span><span class="mono" style="overflow-wrap:anywhere">2026-08-15_Gladiadores_Foto_BienvenidaGladiadores.jpg</span></div>
+        <div><span class="pill ok" style="flex:none">${ic('check',12)}</span><span class="mono" style="overflow-wrap:anywhere">2026-10-05_S-08_Factura_CambioControlador.pdf</span></div>
+        <div><span class="pill bad" style="flex:none">✕</span><span class="mono" style="overflow-wrap:anywhere">IMG_4471 (2) final FINAL.jpg</span></div>
+      </div>
+      <ul style="font-size:14px;margin:14px 0 0;padding-left:18px;display:flex;flex-direction:column;gap:4px">
+        <li>Fecha primero, para que se ordenen solos.</li><li>Sin acentos, espacios ni “ñ”; las palabras se unen con mayúscula inicial.</li>
+        <li>Los expedientes usan el ID del atleta (A01), nunca su nombre completo.</li><li>Nada de versiones en el nombre: el repositorio guarda el historial.</li>
+      </ul></div>
+  </div></div>`;
+}
+
+/* ---------- REPORTE ---------- */
+let lastReport = '';
+function vRep(){
+  return `
+  <div class="head"><div><h1>Reporte de impacto</h1><p class="sub">Se arma solo con los datos de los cuatro módulos. Antes había que juntar información de varios archivos a mano; medir esa diferencia de tiempo es una de las métricas del proyecto.</p></div></div>
+  <div class="filters" style="max-width:640px">
+    <label class="field">Para quién<select id="rp-aud">${['Patrocinadores','Donantes','Consejo directivo'].map(a=>`<option ${S.rep.aud===a?'selected':''}>${a}</option>`).join('')}</select></label>
+    <div style="display:flex;align-items:flex-end;gap:8px;flex:0 0 auto"><button class="btn primary" id="rp-go">${ic('doc',16)} Generar reporte</button><button class="btn" id="rp-copy">${ic('copy',16)} Copiar texto</button></div>
+  </div>
+  <div id="rp-out">${buildReport()}</div>`;
+}
+function buildReport(){
+  const t0 = performance.now();
+  const aud = S.rep.aud;
+  const teams = [...new Set(ATH.map(a=>a.t))], cities = [...new Set(ATH.map(a=>TEAMS[a.t].split(' (')[0]))];
+  const sel = ATH.filter(a=>a.tor.some(x=>x.includes('Selección'))).length;
+  const chairsServed = new Set(MANT.map(m=>m.s)).size, mcost = MANT.reduce((a,m)=>a+m.cost,0);
+  const rec = recurrentes().length, monthly = mensualRec();
+  const spons = DON.filter(d=>d.k==='Patrocinador'), allies = DON.filter(d=>d.k==='Aliado institucional');
+  const photos = MED.filter(x=>x.au==='Autorizada' && x.y==='2026').map(x=>x.ev);
+  const ms = Math.max(1,Math.round(performance.now()-t0));
+  const intro = aud==='Patrocinadores' ? 'Gracias a su apoyo, la temporada 2026 fue la más grande en la historia de la liga.'
+    : aud==='Donantes' ? 'Tu donativo mensual mantiene las sillas funcionando y a los equipos en la cancha. Esto es lo que logramos juntos en 2026.'
+    : 'Resumen operativo de la temporada 2026 para la asamblea de asociados.';
+  const pts = [
+    `${ATH.length} atletas en ${teams.length} equipos de ${cities.length} ciudades, en La Liga y la Liga de Desarrollo.`,
+    `${sel} atletas representaron a México con la Selección Nacional en la Copa América 2025.`,
+    `${MANT.length} servicios de mantenimiento a ${chairsServed} sillas deportivas, por ${mxn(mcost)}.`,
+    `Tigres, campeón invicto de la temporada; nació Gladiadores en Monterrey y se dio la primera clínica en León.`,
+    `${rec} donantes recurrentes aportan ${mxn(monthly)} al mes; la meta es llegar a 500.`,
+    aud!=='Donantes' ? `${spons.length} patrocinadores y ${allies.length} aliados institucionales acompañan a la asociación.` : `Con $250 MXN se financian ${(250/costoHora()).toFixed(1).replace('.',',')} horas de servicio técnico para una silla.`
+  ];
+  const need = `Pendientes: ${ATH.filter(a=>!a.s).length} atletas siguen sin silla deportiva propia (cerca de 10,000 USD cada una).`;
+  lastReport = [`Reporte de impacto · Temporada 2026 · Para: ${aud}`,'',intro,'',...pts.map(p=>'• '+p),'',need,'','Powerchair Football México, A.C.'].join('\n');
+  return `<div class="report">
+    <span class="pill warn">Para: ${esc(aud)}</span>
+    <h2 style="margin-top:10px">Temporada 2026</h2><p class="muted">Powerchair Football México, A.C.</p>
+    <div class="rk"><div><b>${ATH.length}</b><span>atletas</span></div><div><b>${teams.length}</b><span>equipos</span></div><div><b>${MANT.length}</b><span>servicios a sillas</span></div><div><b>${rec}</b><span>donantes mensuales</span></div></div>
+    <p>${esc(intro)}</p><ul>${pts.map(p=>`<li>${esc(p)}</li>`).join('')}</ul>
+    <p><b>${esc(need)}</b></p>
+    ${photos.length?`<p class="muted" style="font-size:13.5px">Fotos sugeridas (uso autorizado): ${esc([...new Set(photos)].join(', '))}.</p>`:''}
+    <div class="alert info" style="margin-top:18px">${ic('clock',16)}<span>Armado en ${ms} ms con datos de los cuatro módulos. Las cifras salen de los datos de ejemplo del prototipo.</span></div>
+  </div>`;
+}
+
+/* ---------- AYUDA ---------- */
+function vAyuda(){
+  const g = [
+    ['Subir un archivo',['Entra a Medios e historia y usa “Agregar archivo”.','Elige fecha, equipo y tipo, y escribe una descripción corta.','Revisa el nombre que genera el sistema y marca si la imagen tiene autorización.','Guarda. El archivo queda en la carpeta del año correspondiente.']],
+    ['Registrar un donante',['Entra a Donantes y aliados → Nuevo registro.','Escribe el nombre y el correo; si aparece un aviso de posible duplicado, abre el registro existente en lugar de crear otro.','Indica el tipo, la aportación y si requiere factura.','Asigna la próxima acción: agradecer, invitar o renovar.']],
+    ['Pedir acceso a datos médicos',['Solo Dirección y el Encargado deportivo abren la sección médica.','Si tu trabajo lo requiere, pide el acceso por escrito a Dirección y explica para qué.','Antes de capturar información médica, confirma que el consentimiento esté firmado.','Cada consulta queda en la bitácora del expediente.']],
+    ['Armar un reporte de impacto',['Entra a Reporte de impacto.','Elige para quién es: patrocinadores, donantes o consejo.','Genera el reporte y copia el texto para tu correo o presentación.','Usa solo fotos con uso de imagen autorizado.']]
+  ];
+  return `<div class="head"><div><h1>Manual rápido</h1><p class="sub">Lo básico para las dos o tres personas que usarán el repositorio todos los días.</p></div></div>
+  <div class="stack"><div class="grid2 even">${g.map(([t,s])=>`<div class="panel guide"><h2>${t}</h2><ol>${s.map(x=>`<li>${esc(x)}</li>`).join('')}</ol></div>`).join('')}</div>
+  <div class="panel"><h2>Protección de datos personales</h2>
+    <p style="max-width:70ch;font-size:14.5px">Los expedientes contienen datos de salud, que la Ley Federal de Protección de Datos Personales en Posesión de los Particulares considera datos sensibles. Por eso el repositorio aplica cuatro reglas:</p>
+    <ul style="font-size:14.5px;margin:10px 0 0;padding-left:20px;display:flex;flex-direction:column;gap:4px;max-width:70ch">
+      <li>Consentimiento expreso y por escrito del atleta, o de su tutor si es menor de edad, antes de capturar cualquier dato médico.</li>
+      <li>Aviso de privacidad entregado y aceptado, que explique para qué se usan los datos.</li>
+      <li>Acceso restringido por rol: la sección médica solo la abren Dirección y el Encargado deportivo.</li>
+      <li>Bitácora de quién consultó cada expediente y cuándo.</li>
+    </ul>
+    <p class="muted" style="font-size:13px;margin-top:10px">Este prototipo no reemplaza una revisión legal; la OSF debe validar su aviso de privacidad con un especialista.</p>
+  </div></div>`;
+}
+
+/* ---------- eventos ---------- */
+function bind(){
+  const on = (sel,ev,fn) => { const el=$(sel); if(el) el.addEventListener(ev,fn); };
+  const keep = (sel,obj,key) => on(sel,'input',e=>{ obj[key]=e.target.value; const pos=e.target.selectionStart; render(); const n=$(sel); if(n){ n.focus(); try{n.setSelectionRange(pos,pos);}catch(_){} } });
+  // atletas
+  keep('#af-q',S.af,'q'); ['t','cat','con'].forEach(k=>on('#af-'+k,'change',e=>{S.af[k]=e.target.value;render();}));
+  document.querySelectorAll('[data-ath]').forEach(tr=>{ const f=()=>{S.ath=tr.dataset.ath;render();}; tr.addEventListener('click',f); tr.addEventListener('keydown',e=>{if(e.key==='Enter')f();}); });
+  document.querySelectorAll('[data-med]').forEach(b=>b.addEventListener('click',()=>{
+    const id=b.dataset.med, d=new Date(); S.medOpen.add(id);
+    LOG.unshift({t:`${d.getDate()} ${MESES[d.getMonth()]} ${d.getFullYear()} · ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`,r:R().l,a:id});
+    render(); toast('Acceso registrado en la bitácora');
+  }));
+  // medios
+  ['tp','eq','au','y'].forEach(k=>on('#mf-'+k,'change',e=>{S.mf[k]=e.target.value;render();}));
+  if($('#nf-name')){ ['#nf-f','#nf-eq','#nf-tp','#nf-d'].forEach(s=>{ $(s).addEventListener('input',nfName); $(s).addEventListener('change',nfName); }); nfName();
+    on('#nf-add','click',()=>{ const r=nfName(); const msg=$('#nf-msg');
+      if(!r.ok){ msg.innerHTML=`<div class="alert bad">${ic('alert',16)}<span>Escribe una descripción de al menos 3 letras para nombrar el archivo.</span></div>`; return; }
+      if(MED.some(x=>x.fn===r.name)){ msg.innerHTML=`<div class="alert warn">${ic('alert',16)}<span>Ya existe un archivo con ese nombre. Cambia la descripción.</span></div>`; return; }
+      MED.push({fn:r.name,tp:r.tp,eq:r.eq,ev:r.d,au:$('#nf-au').value,mg:'Migrado',y:r.f.slice(0,4)});
+      S.mf={tp:'',eq:'',au:'',y:''}; render(); toast(`Agregado: ${r.name}`); }); }
+  // donantes
+  document.querySelectorAll('[data-tab]').forEach(b=>b.addEventListener('click',()=>{S.dTab=b.dataset.tab;render();}));
+  keep('#df-q',S.df,'q'); on('#df-k','change',e=>{S.df.k=e.target.value;render();});
+  document.querySelectorAll('[data-don]').forEach(tr=>{ const f=()=>{S.don=tr.dataset.don;render();}; tr.addEventListener('click',f); tr.addEventListener('keydown',e=>{if(e.key==='Enter')f();}); });
+  document.querySelectorAll('[data-done]').forEach(b=>b.addEventListener('click',()=>{ const d=DON.find(x=>x.id===b.dataset.done); d.nx=''; d.nf=''; render(); toast('Acción marcada como hecha'); }));
+  document.querySelectorAll('[data-mv]').forEach(b=>b.addEventListener('click',()=>{ const p=PIPE[+b.dataset.mv]; p.st=Math.min(3,Math.max(0,p.st+(+b.dataset.d))); render(); toast(`${p.e}: ${STAGES[p.st]}`); }));
+  if($('#nd-n')){
+    const chk=()=>{ const ds=findDups($('#nd-n').value,$('#nd-e').value); const box=$('#nd-dup');
+      box.innerHTML = ds.length ? `<div class="alert warn">${ic('alert',16)}<div style="flex:1"><b>Posible duplicado.</b> Ya existe${ds.length>1?'n':''}: ${ds.map(d=>`<button class="btn sm" style="margin:4px 4px 0 0" data-open="${d.id}">${esc(d.n)}</button>`).join('')}<div style="font-size:13px;margin-top:4px">Abre el registro existente en lugar de crear uno nuevo.</div></div></div>` : '';
+      box.querySelectorAll('[data-open]').forEach(x=>x.addEventListener('click',()=>{S.don=x.dataset.open;S.dTab='registro';S.df={q:'',k:''};render();}));
+      return ds; };
+    $('#nd-n').addEventListener('input',chk); $('#nd-e').addEventListener('input',chk);
+    on('#nd-save','click',()=>{ const n=$('#nd-n').value.trim(); if(n.length<3){ $('#nd-dup').innerHTML=`<div class="alert bad">${ic('alert',16)}<span>Escribe el nombre completo o la razón social.</span></div>`; return; }
+      if(chk().length){ toast('Revisa el posible duplicado antes de guardar'); return; }
+      const k=$('#nd-k').value, m=+$('#nd-m').value, id='D'+String(DON.length+1).padStart(2,'0');
+      DON.push({id,n,k,em:$('#nd-e').value.trim()||'—',m,since:'2026-10',fac:$('#nd-f').value==='1',nx:'Enviar bienvenida',nf:'2026-11-02',hist:m?[{f:'2026-10',m,st:'Cobrado'}]:[]});
+      S.don=id; S.dTab='registro'; render(); toast(`Registro guardado: ${n}`); });
+  }
+  // reporte
+  on('#rp-aud','change',e=>{S.rep.aud=e.target.value; $('#rp-out').innerHTML=buildReport();});
+  on('#rp-go','click',()=>{ $('#rp-out').innerHTML=buildReport(); toast('Reporte generado'); });
+  on('#rp-copy','click',()=>{ if(!lastReport) buildReport();
+    const done=()=>toast('Texto del reporte copiado');
+    try{ navigator.clipboard.writeText(lastReport).then(done).catch(fallback); }catch(_){ fallback(); }
+    function fallback(){ const ta=document.createElement('textarea'); ta.value=lastReport; document.body.appendChild(ta); ta.select(); try{document.execCommand('copy'); done();}catch(_){ toast('Selecciona el texto del reporte y cópialo manualmente'); } ta.remove(); } });
+}
+
+go();
+</script>
+
+</body></html>
